@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:place_picker/src/entities/autocomplete_item.dart';
 import 'package:place_picker/src/entities/entities.dart';
 import 'package:place_picker/src/providers/autocomplete.dart';
@@ -82,6 +83,25 @@ class _PlacePickerViewState extends State<PlacePickerView> {
 
     Provider.of<LocationResultProvider>(context, listen: false)
         .setWithLatLng(widget.displayLocation ?? kDefaultLocation);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // move to user location, if former location wasn't set
+    if (widget.displayLocation == null) {
+      Location().getLocation().then((location) {
+        final latLng = LatLng(location.latitude, location.longitude);
+
+        mapController.future.then((controller) {
+          controller.moveCamera(CameraUpdate.newLatLng(latLng));
+        });
+
+        Provider.of<LocationResultProvider>(context, listen: false)
+            .setWithLatLng(latLng);
+      });
+    }
   }
 
   @override
