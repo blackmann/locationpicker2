@@ -89,19 +89,22 @@ class _PlacePickerViewState extends State<PlacePickerView> {
   void initState() {
     super.initState();
 
-    // move to user location, if former location wasn't set
-    if (widget.displayLocation == null) {
-      Location().getLocation().then((location) {
-        final latLng = LatLng(location.latitude, location.longitude);
+    // debouncing because of race situations with onMapCreated
+    Timer(Duration(milliseconds: 50), () {
+      // move to user location, if former location wasn't set
+      if (widget.displayLocation == null) {
+        Location().getLocation().then((location) {
+          final latLng = LatLng(location.latitude, location.longitude);
 
-        mapController.future.then((controller) {
-          controller.moveCamera(CameraUpdate.newLatLng(latLng));
+          mapController.future.then((controller) {
+            controller.moveCamera(CameraUpdate.newLatLngZoom(latLng, 16));
+          });
+
+          Provider.of<LocationResultProvider>(context, listen: false)
+              .setWithLatLng(latLng);
         });
-
-        Provider.of<LocationResultProvider>(context, listen: false)
-            .setWithLatLng(latLng);
-      });
-    }
+      }
+    });
   }
 
   @override
@@ -159,15 +162,17 @@ class _PlacePickerViewState extends State<PlacePickerView> {
           //  nearby places
           if (autoCompleteProvider.autocompletions
                   is Initial<List<AutoCompleteItem>> ||
-              !isKeyboardShowing())
+              !_isKeyboardShowing())
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   SelectPlaceAction(
-                      locationResultProvider.getResultTitle(),
-                      () => Navigator.of(context)
-                          .pop(locationResultProvider.result.data)),
+                    title: locationResultProvider.getResultTitle(),
+                    onTap: () => Navigator.of(context)
+                        .pop(locationResultProvider.result.data),
+                    isLoading: _isLoading(),
+                  ),
                   Divider(height: 8),
                   Padding(
                     child:
@@ -194,7 +199,13 @@ class _PlacePickerViewState extends State<PlacePickerView> {
     );
   }
 
-  bool isKeyboardShowing() {
+  bool _isLoading() {
+    final res = Provider.of<LocationResultProvider>(context).result;
+
+    return res is Loading<LocationResult>;
+  }
+
+  bool _isKeyboardShowing() {
     return MediaQuery.of(context).viewInsets.bottom > 100;
   }
 

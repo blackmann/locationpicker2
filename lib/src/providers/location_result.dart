@@ -43,8 +43,8 @@ class LocationResultProvider extends ChangeNotifier {
 
     final reverseData = await api.reverseGeoCode(latLng);
 
-    LocationResult lr =
-        LocationResult(latLng: latLng, data: reverseData, name: name);
+    // TODO use name arg
+    final lr = _buildResult(latLng, reverseData);
 
     result = DataState.loaded(lr);
 
@@ -58,9 +58,7 @@ class LocationResultProvider extends ChangeNotifier {
 
     final reverseData = await api.reverseGeoCode(latLng);
 
-    // TODO: change name
-    LocationResult lr =
-        LocationResult(latLng: latLng, data: reverseData, name: 'Unnamed road');
+    final lr = _buildResult(latLng, reverseData);
 
     result = DataState.loaded(lr);
 
@@ -79,5 +77,20 @@ class LocationResultProvider extends ChangeNotifier {
     final res = await _setWithLatLng(decoded);
 
     return res;
+  }
+
+  LocationResult _buildResult(LatLng latLng, Map<String, dynamic> data) {
+    final addressComp = data['results'][0];
+
+    final name = addressComp['address_components'][0]['short_name'];
+    final formattedAddress = addressComp['formatted_address'];
+
+    LocationResult lr = LocationResult(
+        latLng: latLng,
+        data: data,
+        name: name,
+        formattedAddress: formattedAddress);
+
+    return lr;
   }
 }

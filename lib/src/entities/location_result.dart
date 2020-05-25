@@ -28,4 +28,9 @@ class LocationResult {
     this.formattedAddress,
     this.data,
   });
+
+  @override
+  String toString() {
+    return 'LocationResult: $name (${latLng.latitude}, ${latLng.longitude})';
+  }
 }
