@@ -11,7 +11,6 @@ class AutoCompleteProvider extends ChangeNotifier {
   AutoCompleteProvider({@required this.api});
 
   Future<void> search(String keyword) async {
-    // hides the nearby places too when keyword is empty
     autocompletions = DataState.loading();
 
     notifyListeners();

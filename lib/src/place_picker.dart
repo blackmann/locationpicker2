@@ -200,7 +200,8 @@ class _PlacePickerViewState extends State<PlacePickerView> {
   }
 
   bool _isLoading() {
-    final res = Provider.of<LocationResultProvider>(context).result;
+    final res =
+        Provider.of<LocationResultProvider>(context, listen: false).result;
 
     return res is Loading<LocationResult>;
   }
@@ -236,6 +237,12 @@ class _PlacePickerViewState extends State<PlacePickerView> {
                   });
                 }))
             .toList();
+
+        if (suggestions.isEmpty) {
+          final empty = AutoCompleteItem(
+              id: '', text: 'No result found', offset: 0, length: 0);
+          suggestions.add(RichSuggestion(empty, () {}));
+        }
 
         displayAutoCompleteSuggestions(suggestions);
       } else if (results is Loading<List<AutoCompleteItem>>) {
