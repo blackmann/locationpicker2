@@ -51,7 +51,7 @@ class LocationResultProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _setWithLatLng(LatLng latLng) async {
+  Future<LocationResult> _setWithLatLng(LatLng latLng) async {
     result = DataState.loading();
 
     notifyListeners();
@@ -65,5 +65,19 @@ class LocationResultProvider extends ChangeNotifier {
     result = DataState.loaded(lr);
 
     notifyListeners();
+
+    return lr;
+  }
+
+  Future<LocationResult> setWithPlaceId(String id) async {
+    result = DataState.loading();
+
+    notifyListeners();
+
+    final decoded = await api.decodePlace(id);
+
+    final res = await _setWithLatLng(decoded);
+
+    return res;
   }
 }

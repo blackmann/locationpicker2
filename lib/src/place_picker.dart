@@ -185,6 +185,8 @@ class _PlacePickerViewState extends State<PlacePickerView> {
     // build overlay on autocomplete results
     final autoCompleteProvider = Provider.of<AutoCompleteProvider>(context);
 
+    final locationResultProvider = Provider.of<LocationResultProvider>(context);
+
     autoCompleteProvider.addListener(() {
       final results = autoCompleteProvider.autocompletions;
 
@@ -194,6 +196,13 @@ class _PlacePickerViewState extends State<PlacePickerView> {
         final suggestions = results.data
             .map((e) => RichSuggestion(e, () {
                   autoCompleteProvider.clear();
+
+                  // move camera
+                  locationResultProvider.setWithPlaceId(e.id).then((lr) {
+                    mapController.future.then((controller) {
+                      controller.moveCamera(CameraUpdate.newLatLng(lr.latLng));
+                    });
+                  });
                 }))
             .toList();
 
